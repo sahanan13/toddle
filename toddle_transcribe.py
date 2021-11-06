@@ -52,12 +52,12 @@ def transcribe_file(job_name, job_uri, transcribe, file_type):
             break
         print("In Progress...")
         time.sleep(10)
-    print(status)
+    return status
 
 def main():
     
-    job_name = input("type job name: ")
-    file_name = input("type file name: ") # toddle_lec
+    job_name = input("type job name: ") # transcribe job name
+    file_name = input("type file name: ") # toddle_lec.mp4
     file_type = input("type file type: ") # mp4
     user_input = input("type file path: ") # file path: C:\Users\Minjk\Downloads\toddle_lec.mp4
 
@@ -68,7 +68,8 @@ def main():
     job_uri = get_s3uri(file_name, file_type, user_input)
     print( "job uri: " + job_uri )
 
-    transcribe_file(job_name, job_uri, transcribe, file_type)
-
+    text_output = transcribe_file(job_name, job_uri, transcribe, file_type)
+    # print(type(text_output))
+    
 if __name__ == '__main__':
     main()
