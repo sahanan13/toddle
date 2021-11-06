@@ -27,9 +27,6 @@ def get_s3uri(file_name, file_type, user_input):
 
     location = boto3.client('s3').get_bucket_location(Bucket=bucket_name)['LocationConstraint']
 
-    # url = "https://s3-%s.amazonaws.com/%s/%s" % (location, bucket_name, key)
-    # job_uri = 's3://toddle-test-mjk/COLHIST12014-V008200_DTH.mp4'
-
     uri = "s3://%s/%s" % (bucket_name, file_name)
     print("uri:  " + uri)
     return uri
@@ -62,13 +59,7 @@ def main():
     job_name = input("type job name: ")
     file_name = input("type file name: ") # toddle_lec
     file_type = input("type file type: ") # mp4
-    # user_input = input("type file path: ") # file path: C:\Users\Minjk\Downloads\toddle_lec.mp4
-    user_input = 'C:\\Users\\Minjk\\Downloads\\toddle_lec.mp4'
-
-    # print(type(job_name))
-    # print(type(file_name))
-    # print(type(file_type))
-    # print(type(user_input))
+    user_input = input("type file path: ") # file path: C:\Users\Minjk\Downloads\toddle_lec.mp4
 
     assert os.path.exists(user_input), "File not found at " + str(user_input)
     print("File " + str(user_input) + "is found")
@@ -78,12 +69,6 @@ def main():
     print( "job uri: " + job_uri )
 
     transcribe_file(job_name, job_uri, transcribe, file_type)
-
-    # job_file.close()
-
-    # job_name = 'test_mjk3'
-    # job_uri = 's3://toddle-test-mjk/COLHIST12014-V008200_DTH.mp4'
-    # transcribe_file(job_name, job_uri, transcribe)
 
 if __name__ == '__main__':
     main()
