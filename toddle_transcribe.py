@@ -9,18 +9,29 @@ import json
 transcribe = boto3.client('transcribe')
 
 def get_s3uri(file_name, file_type, user_input):
-    bucket_name = "toddle_transcribe" # let files uploaded to the same s3 bucket
+    bucket_name = "toddle-transcribe-test-mjk" # let files uploaded to the same s3 bucket
 
     s3 = boto3.resource('s3')
     bucket = s3.Bucket(bucket_name)
-    bucket.upload_file(user_input, bucket_name, file_name, ExtraArgs=None) # TODO debug usage of upload_file
+    print(user_input) 
+    print(bucket_name)
+    print(file_name)
+
+    try:
+        bucket.upload_file(user_input, file_name, ExtraArgs = {}) # TODO debug usage of upload_file
+    except:
+        s3.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={
+            'LocationConstraint': 'us-east-2'
+        })
+        bucket.upload_file(user_input, file_name, ExtraArgs = {})
 
     location = boto3.client('s3').get_bucket_location(Bucket=bucket_name)['LocationConstraint']
 
     # url = "https://s3-%s.amazonaws.com/%s/%s" % (location, bucket_name, key)
     # job_uri = 's3://toddle-test-mjk/COLHIST12014-V008200_DTH.mp4'
 
-    uri = "s3://%s/%s.%s" % (bucket_name, file_name, file_type)
+    uri = "s3://%s/%s" % (bucket_name, file_name)
+    print("uri:  " + uri)
     return uri
 
 
@@ -49,9 +60,10 @@ def transcribe_file(job_name, job_uri, transcribe, file_type):
 def main():
     
     job_name = input("type job name: ")
-    file_name = input("type file name (without type): ") # toddle_lec
+    file_name = input("type file name: ") # toddle_lec
     file_type = input("type file type: ") # mp4
-    user_input = input("type file path: ") # file path: C:\Users\Minjk\Downloads\toddle_lec.mp4
+    # user_input = input("type file path: ") # file path: C:\Users\Minjk\Downloads\toddle_lec.mp4
+    user_input = 'C:\\Users\\Minjk\\Downloads\\toddle_lec.mp4'
 
     # print(type(job_name))
     # print(type(file_name))
