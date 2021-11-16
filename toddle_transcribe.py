@@ -58,11 +58,16 @@ def transcribe_file(job_name, job_uri, transcribe, file_type):
     return text_output
 
 def main():
-    
-    job_name = input("type job name: ") # transcribe job name
-    file_name = input("type file name: ") # toddle_lec.mp4
-    file_type = input("type file type: ") # mp4
+    os_type = input("Type \"w\" for windows and \"m\" for mac: ")
     user_input = input("type file path: ") 
+    if os_type == "w":
+        slash = "\\"
+    else:
+        slash = "/"
+    job_name = user_input.split(slash)[2] + "_job"
+    file_name = user_input.split(slash)[4]
+    file_type = file_name.split(".")[1]
+
     # file path: C:\Users\Minjk\Downloads\toddle_lec.mp4 (for windows)
     # file path: /Users/Minjk/Downloads/toddle_lec.mp4 (for mac)
 
@@ -73,6 +78,7 @@ def main():
     job_uri = get_s3uri(file_name, file_type, user_input)
     print( "job uri: " + job_uri )
 
+    # skip transcription if json/txt file exists & save as file_name.json
     text_output = transcribe_file(job_name, job_uri, transcribe, file_type)
     # print(type(text_output))
     # print(text_output)
