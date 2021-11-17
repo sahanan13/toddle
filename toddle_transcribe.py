@@ -58,6 +58,7 @@ def transcribe_file(job_name, job_uri, transcribe, file_type):
     return text_output
 
 def main():
+    # gets input for os type and file path
     os_type = input("Type \"w\" for windows and \"m\" for mac: ")
     user_input = input("type file path: ") 
     if os_type == "w":
@@ -68,20 +69,20 @@ def main():
     file_name = user_input.split(slash)[4]
     file_type = file_name.split(".")[1]
 
-    # file path: C:\Users\Minjk\Downloads\toddle_lec.mp4 (for windows)
-    # file path: /Users/Minjk/Downloads/toddle_lec.mp4 (for mac)
-
+    # finds file from the input path
     assert os.path.exists(user_input), "File not found at " + str(user_input)
     print("File " + str(user_input) + " is found")
     job_file = open(user_input, 'r+')
 
+    # upload the file to s3 bucket and get its uri
     job_uri = get_s3uri(file_name, file_type, user_input)
     print( "job uri: " + job_uri )
 
-    # skip transcription if json/txt file exists & save as file_name.json
+    # TODO: skip transcription if json/txt file exists & save as file_name.json
+
+    # get a transcription with AWS transcribe from s3 uri
     text_output = transcribe_file(job_name, job_uri, transcribe, file_type)
-    # print(type(text_output))
-    # print(text_output)
+   
    
     
 if __name__ == '__main__':
