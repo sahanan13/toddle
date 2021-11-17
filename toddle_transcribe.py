@@ -13,9 +13,6 @@ def get_s3uri(file_name, file_type, user_input):
 
     s3 = boto3.resource('s3')
     bucket = s3.Bucket(bucket_name)
-    # print(user_input) 
-    # print(bucket_name)
-    # print(file_name)
 
     try:
         bucket.upload_file(user_input, file_name, ExtraArgs = {}) # TODO debug usage of upload_file
@@ -28,7 +25,6 @@ def get_s3uri(file_name, file_type, user_input):
     location = boto3.client('s3').get_bucket_location(Bucket=bucket_name)['LocationConstraint']
 
     uri = "s3://%s/%s" % (bucket_name, file_name)
-    # print("uri:  " + uri)
     return uri
 
 
@@ -82,8 +78,6 @@ def main():
 
     # get a transcription with AWS transcribe from s3 uri
     text_output = transcribe_file(job_name, job_uri, transcribe, file_type)
-   
-   
-    
+     
 if __name__ == '__main__':
     main()
