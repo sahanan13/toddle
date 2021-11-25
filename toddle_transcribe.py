@@ -5,6 +5,10 @@ import urllib
 import sys
 import os
 import json
+# for summarization
+from gensim.summarization.summarizer import summarize
+from gensim.summarization import keywords
+from datetime import datetime
 
 transcribe = boto3.client('transcribe')
 
@@ -44,10 +48,10 @@ def transcribe_file(job_name, job_uri, transcribe, file_type):
             response = urllib.request.urlopen(status['TranscriptionJob']['Transcript']['TranscriptFileUri'])
             data = json.loads(response.read())
             text = data['results']['transcripts'][0]['transcript']
-            print("========== below is output of speech-to-text ========================")
-            print(text)
+            #print("========== below is output of speech-to-text ========================")
+            #print(text)
             text_output += text
-            print("=====================================================================")
+            #print("=====================================================================")
             break
         print("In Progress...")
         time.sleep(10)
@@ -63,7 +67,7 @@ def main():
         slash = "/"
     job_name = user_input.split(slash)[2] + "_job"
     file_name = user_input.split(slash)[4]
-    file_type = file_name.split(".")[1]
+    file_type = 'mp4' #file_name.split(".")[1]
 
     # finds file from the input path
     assert os.path.exists(user_input), "File not found at " + str(user_input)
@@ -78,6 +82,20 @@ def main():
 
     # get a transcription with AWS transcribe from s3 uri
     text_output = transcribe_file(job_name, job_uri, transcribe, file_type)
-     
+    
+    #Summarizing text_output
+    now = datetime.now()
+    # dd/mm/YY H:M:S
+    dt_string = now.strftime("%d-%m-%Y_%H.%M.%S")
+    pathname = 'summary' + dt_string + '.txt'
+
+    # Summary (2.0% of the original content)
+    summ_per = summarize(text_output, ratio = 0.20)
+
+    with open(pathname, 'w') as f:
+        f.write(summ_per)
+
+    print("Written to file: ", pathname)
+
 if __name__ == '__main__':
     main()
