@@ -70,13 +70,13 @@ def main():
     print("File " + str(user_input) + " is found")
     job_file = open(user_input, 'r+')
 
-    # upload the file to s3 bucket and get its uri
+    # uploads the file to s3 bucket and get its uri
     job_uri = get_s3uri(file_name, file_type, user_input)
     print( "job uri: " + job_uri )
 
     # TODO: skip transcription if json/txt file exists & save as file_name.json
 
-    # get a transcription with AWS transcribe from s3 uri
+    # gets a transcription with AWS transcribe from s3 uri
     text_output = transcribe_file(job_name, job_uri, transcribe, file_type)
      
 if __name__ == '__main__':
