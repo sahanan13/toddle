@@ -20,12 +20,13 @@ bucket_name = "toddle-transcribe-test-mjk" # let files uploaded to the same s3 b
 
 # get file path as an input for parameters
 def user_input(date):
-    os_type = input("Type \"w\" for windows and \"m\" for mac: ")
     file_path = input("type file path: ") 
-    if os_type == "w":
-        slash = "\\"
+  
+    if file_path.find("\\"):
+        slash = "\\" # windows
     else:
-        slash = "/"
+        slash = "/" # macs
+
     job_name = file_path.split(slash)[2] + "_job_" + date
     file_name = file_path.split(slash)[4]
     file_type = 'mp4' #file_name.split(".")[1]
@@ -39,7 +40,6 @@ def user_input(date):
 
 def get_s3uri(file_name, user_input):
     bucket = s3.Bucket(bucket_name)
-
     try:
         bucket.upload_file(user_input, file_name, ExtraArgs = {}) # TODO debug usage of upload_file
     except:
@@ -51,23 +51,23 @@ def get_s3uri(file_name, user_input):
     location = boto3.client('s3').get_bucket_location(Bucket=bucket_name)['LocationConstraint']
 
     uri = "s3://%s/%s" % (bucket_name, file_name)
-    # uri = 'https://s3-en-US.amazonaws.com/'+bucket_name+'/'
     print( "Job uri: " + uri )
     return uri 
 
-
 def transcribe_file(job_name, job_uri, transcribe, file_type):
     text_output = ""
-
+    print(file_type)
     transcribe.start_transcription_job(
         TranscriptionJobName=job_name,
         Media={'MediaFileUri': job_uri},
-        MediaFormat='mp4',
+        MediaFormat=file_type,
         LanguageCode='en-US'
     )
 
     while True:
         status = transcribe.get_transcription_job(TranscriptionJobName=job_name)
+        if status['TranscriptionJob']['TranscriptionJobStatus'] in ['FAILED']:
+            print("FAILED")
         if status['TranscriptionJob']['TranscriptionJobStatus'] in ['COMPLETED', 'FAILED']:
             response = urllib.request.urlopen(status['TranscriptionJob']['Transcript']['TranscriptFileUri'])
             data = json.loads(response.read())
@@ -82,24 +82,51 @@ def transcribe_file(job_name, job_uri, transcribe, file_type):
     
     # delete transcription job in bucket
     transcribe.delete_transcription_job(TranscriptionJobName=job_name)
-    s3.delete_object(Bucket=bucket_name)
 
     return text_output
 
-def summarize_text(file_path, file_name, text, date):
+# finds keywords, split text, and summarizes
+def create_note(file_path, file_name, text, date):
+
+    # print("keywords: " + keywords(text))
     # Summary (2.0% of the original content)
     summ_per = summarize(text, ratio = 0.20)
-    pathname = 'summary' + date + '.txt'
-    with open(os.path.join(file_path.replace(file_name, '')), 'w') as f:
-        f.write(summ_per)
+    pathname = file_name + date + '.txt'
 
-    print("Written to file: "+ pathname + " at " + file_path)
+    # print("Written to file: "+ pathname + " at " + file_path)
+    splited = summ_per.split("\n")
+    result = ""
+    for paragraph in splited:
+        result = "·\t" + keywords(paragraph) + "\n" + paragraph + "\n"
+    
+    print(result)
+
+#     num_keys = len(keys)
+#     i = 0
+#     para = []
+
+# def split_text(text, keys, n):
+#     if n == 0:
+#         return 
+#     else:
+#         para.add(text.split(keys[i], 1)[0])
+
+    # with open(pathname, 'w') as f:
+    #     f.write(summ_per)
+    # # print("Written to file: "+ pathname + " at " + file_path)
+    # print("keywords: " + keywords(text))
+
+    # with open(pathname, 'w') as f:
+    #     f.write(summ_per)
+
 
 def main():
     # get datetime for naming
     now = datetime.now()
     dt_string = now.strftime("%d-%m-%Y_%H.%M.%S")
 
+    # if file type == mp4 && txt does not exist, then do:
+    
     # open the file and get parameters from path
     file_path, job_name, file_name, file_type = user_input(dt_string)
 
@@ -112,7 +139,7 @@ def main():
     text_output = transcribe_file(job_name, job_uri, transcribe, file_type)
     
     # use gensim to summarize the transcription
-    summarize_text(file_path, file_name, text_output, dt_string)
+    print( create_note(file_path, file_name, text_output, dt_string))
 
 if __name__ == '__main__':
-    main()
+    main() # folder path
