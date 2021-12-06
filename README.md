@@ -1,2 +1,2 @@
 # toddle (Fall 2021 Project)
-### contributer github: github.com/minjk121
+### Contributer github: [Minjung Kwon](https://github.com/Minjk121)
